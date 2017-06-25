@@ -67,13 +67,15 @@ print_output_old<-function(performance,vars,std.err){
   print(std.err)
 }
 
-print_output<-function(performance,vars,std.err,min.index,minrss.index){
+print_output<-function(performance,vars,std.err,min,minse){
+  print(paste("length_performance=",length(performance)))
   if (length(performance)!=length(vars) || 
       length(vars)!=length(std.err)){
     print("OH FU-")
     # raise error here
   }
   for (i in 1:length(performance)){
+    print(paste("i=",i))
     if (i==1){
       print("1 VAR")
     }else{
@@ -81,10 +83,10 @@ print_output<-function(performance,vars,std.err,min.index,minrss.index){
     }
     print(performance[i])
     print(vars[[i]])
-    if (i==min.index){
+    if (performance[i]==min){
       print("This model has the lowest RSS")
     }
-    if (i=minrss.index){
+    if (performance[i]==minse){
       print("This model is the simplst within 1 SE of the minimum")
     }
     if (i != length(performance)){
@@ -106,11 +108,15 @@ boot.est<-function(data,lin.mod,iv){
   return(sd(error.vec))
 }
 
-find.minse<-function(rss,lb,ub){
-  
+find.minse<-function(rss,lb,ub,min){
+  min.ind<-get.index(rss,min)
+  for (i in 1:length(rss)){
+    if (rss[i])  
+  }
 }
 
 get.index<-function(arr,val){
+  #print(paste("searching for",val))
   for (i in 1:length(arr)){
     if (arr[i]==val){
       return(i)
@@ -171,10 +177,12 @@ lm.forward<-function(data,iv,plotting,verbose){
     ub[i]<-rss[i]+se[i]
   }
   minimum<-min(rss)
-  minse<-find.minse(rss,lb,ub)
+  minse<-find.minse(rss,lb,ub,minimum)
   #print(names(fin.mod$model))
   if (verbose){
-    print_output(rss,list.vars,se,get.index(minimum,rss),get.index(minse,rss))
+    print(paste("min=",minimum))
+    print(paste("minse=",minse))
+    print_output(rss,list.vars,se,minimum,minse)
   }
   if (plotting){
     require(ggplot2)
