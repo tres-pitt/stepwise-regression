@@ -68,14 +68,12 @@ print_output_old<-function(performance,vars,std.err){
 }
 
 print_output<-function(performance,vars,std.err,min,minse){
-  print(paste("length_performance=",length(performance)))
   if (length(performance)!=length(vars) || 
       length(vars)!=length(std.err)){
     print("OH FU-")
     # raise error here
   }
   for (i in 1:length(performance)){
-    print(paste("i=",i))
     if (i==1){
       print("1 VAR")
     }else{
@@ -87,7 +85,7 @@ print_output<-function(performance,vars,std.err,min,minse){
       print("This model has the lowest RSS")
     }
     if (performance[i]==minse){
-      print("This model is the simplst within 1 SE of the minimum")
+      print("This model is the simplest within 1 SE of the minimum")
     }
     if (i != length(performance)){
       print("----------")
@@ -111,12 +109,14 @@ boot.est<-function(data,lin.mod,iv){
 find.minse<-function(rss,lb,ub,min){
   min.ind<-get.index(rss,min)
   for (i in 1:length(rss)){
-    if (rss[i])  
+    if (rss[i] < ub[min.ind] && 
+        rss[i] > lb[min.ind]){
+      return(rss[i])
+    }
   }
 }
 
 get.index<-function(arr,val){
-  #print(paste("searching for",val))
   for (i in 1:length(arr)){
     if (arr[i]==val){
       return(i)
@@ -180,8 +180,11 @@ lm.forward<-function(data,iv,plotting,verbose){
   minse<-find.minse(rss,lb,ub,minimum)
   #print(names(fin.mod$model))
   if (verbose){
-    print(paste("min=",minimum))
-    print(paste("minse=",minse))
+    print(minimum)
+    #print(get.index(rss,minimum))
+    print(paste(paste("Min RSS=",round(minimum,3),sep=""),paste("by ",get.index(rss,minimum),"-var model",sep="")))
+    print(paste(paste("Simplest 1-SE RSS=",round(minse,3),sep=""),paste("by ",get.index(rss,minse),"-var model",sep="")))
+    print("----------")
     print_output(rss,list.vars,se,minimum,minse)
   }
   if (plotting){
@@ -198,4 +201,3 @@ lm.forward<-function(data,iv,plotting,verbose){
 
 x<-lm.forward(mtcars,"mpg",TRUE,TRUE)
 x<-lm.forward(npk,"yield",TRUE,TRUE)
-
